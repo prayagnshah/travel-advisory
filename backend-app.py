@@ -30,6 +30,7 @@ def post_destination():
     response_data = {
         "message": "Building itinerary..."
     }
+
     response = jsonify(response_data)
     # Use the HTTP status code 202 (Accepted) for a non-final response
     response.status_code = 202
@@ -37,18 +38,23 @@ def post_destination():
     # Call the OpenAI API
 
     response = openai.Completion.create(
-        engine="text-davinci-002",  # Which GPT-3 engine to use
+        engine="text-davinci-003",  # Which GPT-3 engine to use
         prompt="Can you recommend a " + length_of_stay + \
         "day itinerary for " + dest_name + "?" + \
-        "in format day1, day2, etc",  # The input text #nopep8
-        temperature=0.5,  # How creative the response should be
-        max_tokens=500,  # Maximum length of the response
+        "in detail ? And they should be in format day1, day2, etc",  # The input text
+        temperature=0.2,  # How creative the response should be
+        max_tokens=1024,  # Maximum length of the response
         n=2,  # How many responses to generate
         stop=None  # Text to stop generation at (optional)
     )
 
     # Extract the response text
+
     itinerary = response.choices[0].text.strip()
+
+    # Inserting a line break after each day
+
+    itinerary = itinerary.replace("Day:", ":\nDay")
 
     # As requested JSON input turning the output in JSON format as well
     response_data = {
