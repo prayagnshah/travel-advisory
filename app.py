@@ -1,24 +1,39 @@
-import requests
 import streamlit as st
+import openai
+from dotenv import load_dotenv
+import os
+
+# Calling key from environment variables
+
+load_dotenv()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def get_itinerary(dest_name, length_of_stay):
+
     # Call the OpenAI API
-    response = requests.post(
-        "http://localhost:5000/destination",
-        json={
-            "destination_name": dest_name,
-            "length_of_stay": length_of_stay
-        }
+
+    response = openai.Completion.create(
+        engine="text-davinci-003",  # Which GPT-3 engine to use
+        prompt="Can you recommend a " + str(length_of_stay) + \
+        "day itinerary for " + str(dest_name) + "?" + \
+        "in detail ? And they should be in format day1, day2, etc",  # The input text
+        temperature=0.2,  # How creative the response should be
+        max_tokens=1024,  # Maximum length of the response
+        n=2,  # How many responses to generate
+        stop=None  # Text to stop generation at (optional)
     )
 
     # Extract the response text
 
-    itinerary = response.json()["message"]
+    itinerary = response.choices[0].text.strip()
 
-    format_itinerary = itinerary.replace("Day:", '\n' + "Day")
+    # Inserting a line break after each day
 
-    return format_itinerary
+    itinerary = itinerary.replace("Day:", ":\nDay")
+
+    return itinerary
 
 # Set up the app name
 
