@@ -30,8 +30,17 @@ st.title("Travel Advisory")
 destination_name = st.text_input("Enter your destination")
 length_of_stay = st.slider("Enter the length of your stay", 0, 10)
 
-# Generate itinerary
+# Generate itinerary and show loading message
 
 if st.button("Generate Itinerary"):
+
+    # Creating a placeholder for the loading message
+
+    placeholder = st.empty()
+    placeholder.text("Building itinerary...")
+
+    # Call the function to generate the itinerary
+
     itinerary = get_itinerary(destination_name, length_of_stay)
+    placeholder.text("")
     st.success(itinerary)
