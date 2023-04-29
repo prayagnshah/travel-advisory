@@ -1,7 +1,9 @@
 import streamlit as st
 import openai
-from dotenv import load_dotenv
 import os
+import redis
+import requests
+from dotenv import load_dotenv
 
 # Calling key from environment variables
 
@@ -9,8 +11,35 @@ load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+host = os.environ.get('REDIS_HOST')
+port = os.environ.get('REDIS_PORT')
+password = os.environ.get('REDIS_PASSWORD')
+
 
 def get_itinerary(dest_name, length_of_stay):
+    
+    # Reading redis credentials from environment variables
+    
+    redis_client = redis.Redis(host=host, port=port, password=password, decode_responses=True)
+    
+    # Getting the IP address of the user
+
+    user_ip = requests.get('https://api.ipify.org').text
+    
+    # Checking if IP address exists in database
+    
+    if redis_client.exists(user_ip):
+        request_count = int(redis_client.get(user_ip))
+        
+        if request_count > 10:
+            st.write("You have exceeded the maximum number of requests. Please try again tomorrow.")
+            st.stop()
+    else:
+        redis_client.set(user_ip, 0, ex=86400)
+    
+    # Incrementing the request count for the IP address
+    
+    redis_client.incr(user_ip)
 
     # Call the OpenAI API
 
@@ -48,7 +77,8 @@ descript = """Made by Prayag Shah with ❤️. Check out the source code at [Git
 st.markdown(descript, unsafe_allow_html=True)
 
 # Set the maximum number of words in the destination name
-MAX_WORDS = 10
+
+max_words= 10
 
 # Get user input
 
@@ -60,7 +90,7 @@ num_words = len(destination_name.split())
 
 # Show a warning message if the number of words exceeds the limit
 
-if num_words > MAX_WORDS:
+if num_words > max_words:
     st.warning("The destination name should be less than 10 words")
     st.stop()
 
