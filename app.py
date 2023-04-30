@@ -44,8 +44,6 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
         SECONDS_IN_A_DAY = 86400
         redis_client.set(user_ip, 0, ex=SECONDS_IN_A_DAY)
     
-    
-    
     prompt = "Can you recommend a " + str(length_of_stay) + "day itinerary for " + str(destination_name) + "?" + "in detail ? And they should be in format Day 1, Day 2, etc" + "Type of trip should be based on" + str(type_of_trip) + "trip"
 
     # Call the OpenAI API
@@ -58,10 +56,8 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
         stop=None  # Text to stop generation at (optional)
     )
 
-    # Extract the response text
     itinerary = response.choices[0].text.strip()
     
-    # Inserting a line break after each day
     itinerary = itinerary.replace(":", "\n")
     
     # Incrementing the request count for the IP address
@@ -72,14 +68,13 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
 
     return itinerary
 
-# Set up the app name
+# title
 st.title("Travel Advisory")
 
 # Defining the description and link to the source code
 
 description = """Made by Prayag Shah with ❤️. Check out the source code at [GitHub](https://github.com/prayagnshah/travel-advisory). <br> Feel free to reach out on [Linkedin](https://www.linkedin.com/in/prayag-shah/) if you have any questions."""
 
-# Add the footer to the app
 st.markdown(description, unsafe_allow_html=True)
 
 # Set the maximum number of words in the destination name
@@ -88,7 +83,6 @@ MAX_WORDS= 3
 # Get user input
 destination_name = st.text_input("Enter your destination")
 
-# Count the number of words in the input
 num_words = len(destination_name.strip().split())
 
 # Show a warning message if the number of words exceeds the limit
@@ -107,7 +101,6 @@ with open("loading_messages.txt", "r") as f:
 # Generate itinerary and show loading message
 if st.button("Generate Itinerary"):
         
-    # Creating a placeholder for the loading message
     placeholder = st.empty()
     
     loading_message = random.choice(loading_messages)
