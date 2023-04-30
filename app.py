@@ -3,6 +3,7 @@ import openai
 import os
 import redis
 import requests
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,17 +17,16 @@ password = os.environ.get('REDIS_PASSWORD')
 redis_client = redis.Redis(host=host, port=port, password=password, decode_responses=True)
 
 
-def get_itinerary(destination_name, length_of_stay):
+def get_itinerary(destination_name, type_of_trip, length_of_stay):
     
-    itinerary_key = f"{destination_name}_{length_of_stay}"
-    placeholder = st.empty()
+    itinerary_key = f"{destination_name}_{length_of_stay}_{type_of_trip}"
     
     
     if redis_client.exists(itinerary_key):
         itinerary = redis_client.get(itinerary_key)
-        placeholder.text("")
-        st.success(itinerary)
-        st.stop()
+        
+        if itinerary:
+            return itinerary
         
     
     # Getting the IP address of the user
@@ -44,15 +44,14 @@ def get_itinerary(destination_name, length_of_stay):
         SECONDS_IN_A_DAY = 86400
         redis_client.set(user_ip, 0, ex=SECONDS_IN_A_DAY)
     
-    # Incrementing the request count for the IP address
-    redis_client.incr(user_ip)
+    
+    
+    prompt = "Can you recommend a " + str(length_of_stay) + "day itinerary for " + str(destination_name) + "?" + "in detail ? And they should be in format Day 1, Day 2, etc" + "Type of trip should be based on" + str(type_of_trip) + "trip"
 
     # Call the OpenAI API
     response = openai.Completion.create(
         engine="text-davinci-003",  # Which GPT-3 engine to use
-        prompt="Can you recommend a " + str(length_of_stay) + \
-        "day itinerary for " + str(destination_name) + "?" + \
-        "in detail ? And they should be in format Day 1, Day 2, etc",  # The input text
+        prompt=prompt,  # The input text
         temperature=0.2,  # How creative the response should be
         max_tokens=1024,  # Maximum length of the response
         n=1,  # How many responses to generate
@@ -65,8 +64,11 @@ def get_itinerary(destination_name, length_of_stay):
     # Inserting a line break after each day
     itinerary = itinerary.replace(":", "\n")
     
+    # Incrementing the request count for the IP address
+    redis_client.incr(user_ip)
+    
     # Storing the key and value in redis for 1 week
-    # redis_client.set(itinerary_key, itinerary, ex=604800)
+    redis_client.set(itinerary_key, itinerary, ex=604800)
 
     return itinerary
 
@@ -94,16 +96,25 @@ if num_words > MAX_WORDS:
     st.warning("The destination name should be less than 3 words")
     st.stop()
 
+type_of_trip = st.text_input("Enter the type of trip (e.g. Trekking, Solo, Religious, etc) (optional)")
+
 length_of_stay = st.slider("Enter the length of your stay", 1, 10)
+
+# Read funny loading messages
+with open("loading_messages.txt", "r") as f:
+    loading_messages = f.readlines()
 
 # Generate itinerary and show loading message
 if st.button("Generate Itinerary"):
         
     # Creating a placeholder for the loading message
     placeholder = st.empty()
-    placeholder.text("Building itinerary...")
+    
+    loading_message = random.choice(loading_messages)
+    placeholder.text(loading_message)
+    
 
     # Call the function to generate the itinerary
-    itinerary = get_itinerary(destination_name, length_of_stay)
+    itinerary = get_itinerary(destination_name, type_of_trip, length_of_stay)
     placeholder.text("")
     st.success(itinerary)
