@@ -30,12 +30,13 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
     
     user_ip = get_user_ip()
     check_rate_limit(user_ip)
-    increment_request_count(user_ip)
     
     itinerary = call_openai_api(destination_name, type_of_trip, length_of_stay)
+    increment_request_count(user_ip)
     itinerary = format_itinerary(itinerary)
     
-    redis_client.set(itinerary_key, itinerary, ex=604800)
+    STORAGE_TIME = 604800
+    redis_client.set(itinerary_key, itinerary, ex=STORAGE_TIME)
     
     return itinerary
 
@@ -89,8 +90,12 @@ def call_openai_api(destination_name, type_of_trip, length_of_stay):
     """
     Making the API call to OpenAI
     """
-    prompt = f"Can you recommend a {length_of_stay} day itinerary for {destination_name}? In detail? And they should be in format Day 1, Day 2, etc. Type of trip should be based on {type_of_trip} trip."
-
+    # If type of trip is provided, then add it to the prompt
+    if type_of_trip:
+        prompt = f"Can you recommend a {length_of_stay} day itinerary for {destination_name}? In detail? And they should be in format Day 1, Day 2, etc. Type of trip should be based on {type_of_trip} trip."
+    else:
+        prompt = f"Can you recommend a {length_of_stay} day itinerary for {destination_name}? In detail? And they should be in format Day 1, Day 2, etc."
+    
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
@@ -115,7 +120,7 @@ def format_itinerary(itinerary):
 st.title("Travel Advisory")
 
 # Description
-description = """Made by Prayag Shah with ❤️. Check out the source code at [GitHub](https://github.com/prayagnshah/travel-advisory). <br> Feel free to reach out on [Linkedin](https://www.linkedin.com/in/prayag-shah/) if you have any questions."""
+description = """Made by [Prayag Shah](https://www.linkedin.com/in/prayag-shah/) with ❤️. Check out the source code at [GitHub](https://github.com/prayagnshah/travel-advisory)."""
 st.markdown(description, unsafe_allow_html=True)
 
 # Set the maximum number of words in the destination name
@@ -145,10 +150,11 @@ if st.button("Generate Itinerary"):
     placeholder = st.empty()
     
     loading_message = random.choice(loading_messages)
-    placeholder.text(loading_message)
     
-
-    # Call the function to generate the itinerary
-    itinerary = get_itinerary(destination_name, type_of_trip, length_of_stay)
+    # Adding loading message
+    with st.spinner(text = loading_message):
+        
+        # Call the function to generate the itinerary
+        itinerary = get_itinerary(destination_name, type_of_trip, length_of_stay)
     placeholder.text("")
     st.success(itinerary)
