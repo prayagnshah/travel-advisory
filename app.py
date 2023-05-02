@@ -62,7 +62,9 @@ def get_user_ip():
     """
     Getting the IP address of the user
     """
-    return requests.get('https://api.ipify.org').text
+    # return requests.get('https://api.ipify.org').text
+    res = requests.get("https://httpbin.org/ip")
+    return res.json()["origin"]
 
 
 def check_rate_limit(user_ip):
