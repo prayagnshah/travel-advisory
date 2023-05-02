@@ -1,6 +1,6 @@
 # Travel Companion
 
-Live version of the app is available at [Travel Companion](travelcompanion.streamlit.app)
+Live version of the app is available at [Travel Companion](https://travelcompanion.streamlit.app/)
 
 ## Description
 
