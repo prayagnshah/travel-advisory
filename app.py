@@ -136,7 +136,7 @@ if num_words > MAX_WORDS:
     st.warning("The destination name should be less than 3 words")
     st.stop()
 
-type_of_trip = st.text_input("Enter the type of trip (e.g. Trekking, Solo, Religious, etc) (optional)")
+type_of_trip = st.text_input("Enter the type of trip (e.g. Hiking, Solo, Religious, etc) (optional)")
 
 length_of_stay = st.slider("Enter the length of your stay", 1, 10)
 

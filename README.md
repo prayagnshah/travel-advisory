@@ -4,7 +4,7 @@ Live version of the app is available at [Travel Companion](travelcompanion.strea
 
 ## Description
 
-This [Streamlit](travelcompanion.streamlit.app) mini-app generates Travel itinerary for a given city or country according to the type of the travel (solo, trekking, religious, etc.) and number of days. This app tries to use text-davinci-003 model to generate the itinerary. Furthermore, just to avoid the bots users will be able to generate the itinerary for 10 times per day and can be increased by reaching out to me by [Email](prayagshah07@gmail.com).
+This [Streamlit](https://streamlit.io/) mini-app generates Travel itinerary for a given city or country according to the type of the travel (solo, trekking, religious, etc.) and number of days. This app tries to use text-davinci-003 model to generate the itinerary. Furthermore, just to avoid the bots users will be able to generate the itinerary for 10 times per day and can be increased by reaching out to me by [Email](prayagshah07@gmail.com).
 
 ## Running Locally
 
