@@ -3,7 +3,7 @@ import openai
 import os
 import redis
 import random
-from flask import request
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -62,21 +62,7 @@ def get_user_ip():
     """
     Getting the IP address of the user
     """
-    # return requests.get('https://api.ipify.org').text
-    # First, try to get the IP address from the X-Forwarded-For header
-    ip = request.headers.get('X-Forwarded-For', None)
-    if ip:
-        # X-Forwarded-For can contain multiple IP addresses separated by commas
-        # We only want the first one (the client's IP address)
-        ip = ip.split(',')[0]
-    else:
-        # If X-Forwarded-For is not present, try to get the IP address from the X-Real-IP header
-        ip = request.headers.get('X-Real-IP', None)
-    if not ip:
-        # If neither header is present, fall back to using request.remote_addr
-        ip = request.remote_addr
-    
-    return ip
+    return requests.get('https://api.ipify.org').text
 
 
 def check_rate_limit(user_ip):
