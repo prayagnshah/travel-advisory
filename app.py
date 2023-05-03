@@ -3,7 +3,6 @@ import openai
 import os
 import redis
 import random
-import requests
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -28,11 +27,9 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
     if itinerary:
         return itinerary
     
-    user_ip = get_user_ip()
-    check_rate_limit(user_ip)
+    check_rate_limit()
     
     itinerary = call_openai_api(destination_name, type_of_trip, length_of_stay)
-    increment_request_count(user_ip)
     itinerary = format_itinerary(itinerary)
     
     STORAGE_TIME = 604800
@@ -58,33 +55,21 @@ def get_itinerary_from_redis(itinerary_key):
             return itinerary
 
 
-def get_user_ip():
+def check_rate_limit():
     """
-    Getting the IP address of the user
+    Checking the count of requests in Redis database and if it exceeds the limit, stops the execution
     """
-    return requests.get('https://api.ipify.org').text
-
-
-def check_rate_limit(user_ip):
-    """
-    Checking the count of IP address in Redis database and if it exceeds the limit, stops the execution
-    """
-    if redis_client.exists(user_ip):
-        request_count = int(redis_client.get(user_ip))
-        RATE_LIMIT_PER_DAY = 10
-        if request_count > RATE_LIMIT_PER_DAY:
+    global_rate_limit_key = "GLOBAL_RATE_LIMIT"
+    global_rate_limit = redis_client.get(global_rate_limit_key)
+    
+    if global_rate_limit is not None:
+        global_rate_limit = int(global_rate_limit)
+        request_count = redis_client.incr("Total_Request_Count")
+        
+        if request_count > global_rate_limit:
             st.write("You have exceeded the maximum number of requests. Please try again tomorrow or reach out to me on [Linkedin](https://www.linkedin.com/in/prayag-shah/) to increase rate-limit.")
             st.stop()
-
-
-def increment_request_count(user_ip):
-    """
-    IP will get reset after 24 hours
-    """
-    SECONDS_IN_A_DAY = 86400
-    redis_client.incr(user_ip)
-    redis_client.expire(user_ip, SECONDS_IN_A_DAY)
-
+            
 
 def call_openai_api(destination_name, type_of_trip, length_of_stay):
     """
