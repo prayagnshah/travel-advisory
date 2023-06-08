@@ -13,14 +13,7 @@ This [Streamlit](https://streamlit.io/) mini-app generates Travel itinerary for 
 2. Create the account on [OpenAI](https://platform.openai.com/account/api-keys) and get the API key.
 3. Create the account on [Upstash](https://console.upstash.com/) to store the user's data and get the API key. This will be used to store the results of the user's query and will not forward the same query to the OpenAI API.
 4. Create the account on [Streamlit](https://streamlit.io/) to deploy the app.
-   Store the API keys in the `.env` file as follows. Try editing the file `.example.env` to `.env` once the below information is stored.
-
-   ```
-   OPENAI_API_KEY = ''
-   REDIS_HOST = ''
-   REDIS_PORT= ''
-   REDIS_PASSWORD= ''
-   ```
+   Store the API keys in the `.env` file as follows. Try editing the file `.example.env` to `.env` once the necessary information is stored.
 
 5. Run the app through the terminal by typing:
    `streamlit run app.py`
