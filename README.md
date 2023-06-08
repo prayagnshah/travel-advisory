@@ -6,6 +6,17 @@ Live version of the app is available at [Travel Companion](https://travelcompani
 
 This [Streamlit](https://streamlit.io/) mini-app generates Travel itinerary for a given city or country according to the type of the travel (solo, trekking, religious, etc.) and number of days. This app tries to use text-davinci-003 model to generate the itinerary. Furthermore, just to avoid the bots users will be able to generate the itinerary for 10 times per day and can be increased by reaching out to me by [Email](prayagshah07@gmail.com).
 
+## Using `Dockerfile`
+
+This Dockerfile will allow you to easily run the application by executing with one line of code. Follow the steps below:
+
+1. Open your command line interface.
+2. Run the following command to start the container and expose port 8501:
+   ```
+   docker run -p 8501:8501 travel-advisory
+   ```
+3. If you are using Windows, open your web browser and navigate to http://localhost:8501/ to access the application.
+
 ## Running Locally
 
 1. Clone the repository and install the requirements by typing:
