@@ -27,3 +27,6 @@ HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
 # Define the command to run the app when the container starts
 
 ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+# Docker file created in the reference of
+# https://docs.streamlit.io/knowledge-base/tutorials/deploy/docker
