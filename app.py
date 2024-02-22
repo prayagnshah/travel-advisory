@@ -10,11 +10,13 @@ load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-host = os.environ.get('REDIS_HOST')
-port = os.environ.get('REDIS_PORT')
-password = os.environ.get('REDIS_PASSWORD')
+host = os.environ.get("REDIS_HOST")
+port = os.environ.get("REDIS_PORT")
+password = os.environ.get("REDIS_PASSWORD")
 
-redis_client = redis.Redis(host=host, port=port, password=password, decode_responses=True)
+redis_client = redis.Redis(
+    host=host, port=port, password=password, decode_responses=True
+)
 
 
 def get_itinerary(destination_name, type_of_trip, length_of_stay):
@@ -23,18 +25,18 @@ def get_itinerary(destination_name, type_of_trip, length_of_stay):
     """
     itinerary_key = get_itinerary_key(destination_name, type_of_trip, length_of_stay)
     itinerary = get_itinerary_from_redis(itinerary_key)
-    
+
     if itinerary:
         return itinerary
-    
+
     check_rate_limit()
-    
+
     itinerary = call_openai_api(destination_name, type_of_trip, length_of_stay)
     itinerary = format_itinerary(itinerary)
-    
+
     STORAGE_TIME = 604800
     redis_client.set(itinerary_key, itinerary, ex=STORAGE_TIME)
-    
+
     return itinerary
 
 
@@ -61,15 +63,17 @@ def check_rate_limit():
     """
     global_rate_limit_key = "GLOBAL_RATE_LIMIT"
     global_rate_limit = redis_client.get(global_rate_limit_key)
-    
+
     if global_rate_limit is not None:
         global_rate_limit = int(global_rate_limit)
         request_count = redis_client.incr("Total_Request_Count")
-        
+
         if request_count > global_rate_limit:
-            st.write("You have exceeded the maximum number of requests. Please try again tomorrow or reach out to me on [Linkedin](https://www.linkedin.com/in/prayag-shah/) to increase rate-limit.")
+            st.write(
+                "You have exceeded the maximum number of requests. Please try again tomorrow or reach out to me on [Linkedin](https://www.linkedin.com/in/prayag-shah/) to increase rate-limit."
+            )
             st.stop()
-            
+
 
 def call_openai_api(destination_name, type_of_trip, length_of_stay):
     """
@@ -80,14 +84,14 @@ def call_openai_api(destination_name, type_of_trip, length_of_stay):
         prompt = f"Can you recommend a {length_of_stay} day itinerary for {destination_name}? In detail? And they should be in format Day 1, Day 2, etc. Type of trip should be based on {type_of_trip} trip."
     else:
         prompt = f"Can you recommend a {length_of_stay} day itinerary for {destination_name}? In detail? And they should be in format Day 1, Day 2, etc."
-    
+
     response = openai.Completion.create(
-        engine="text-davinci-003",
+        engine="gpt-3.5-turbo-instruct",
         prompt=prompt,
         temperature=0.2,
         max_tokens=1024,
         n=1,
-        stop=None
+        stop=None,
     )
 
     return response.choices[0].text.strip()
@@ -98,7 +102,6 @@ def format_itinerary(itinerary):
     Showing Day 1, Day 2, etc. in a new line
     """
     return itinerary.replace(":", "\n")
-        
 
 
 # Title
@@ -109,7 +112,7 @@ description = """Made by [Prayag Shah](https://www.linkedin.com/in/prayag-shah/)
 st.markdown(description, unsafe_allow_html=True)
 
 # Set the maximum number of words in the destination name
-MAX_WORDS= 3
+MAX_WORDS = 3
 
 # User's input
 destination_name = st.text_input("Enter your destination")
@@ -121,7 +124,9 @@ if num_words > MAX_WORDS:
     st.warning("The destination name should be less than 3 words")
     st.stop()
 
-type_of_trip = st.text_input("Enter the type of trip (e.g. Hiking, Solo, Religious, etc) (optional)")
+type_of_trip = st.text_input(
+    "Enter the type of trip (e.g. Hiking, Solo, Religious, etc) (optional)"
+)
 
 length_of_stay = st.slider("Enter the length of your stay", 1, 10)
 
@@ -131,14 +136,14 @@ with open("loading_messages.txt", "r") as f:
 
 # Generate itinerary and show loading message
 if st.button("Generate Itinerary"):
-        
+
     placeholder = st.empty()
-    
+
     loading_message = random.choice(loading_messages)
-    
+
     # Adding loading message
-    with st.spinner(text = loading_message):
-        
+    with st.spinner(text=loading_message):
+
         # Call the function to generate the itinerary
         itinerary = get_itinerary(destination_name, type_of_trip, length_of_stay)
     placeholder.text("")
